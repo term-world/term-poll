@@ -4,7 +4,7 @@ const request = require('request');
 
 var user;
 
-let uri = "http://cdr.theterm.world:5000/pollwatcher" // Becomes localhost in actual implementation
+let uri = "http://cdr.theterm.world:5000/pollwatcher" // Becomes localhost in implementation
 
 const username = () => {
 	let cmd = exec('whoami');
