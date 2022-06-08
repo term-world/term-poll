@@ -4,7 +4,10 @@ const request = require('request');
 
 var user;
 
-let uri = "http://cdr.theterm.world:5000/pollwatcher" // Becomes localhost in implementation
+let uri = "http://localhost:5000/pollwatcher" // Becomes localhost in implementation
+let urj = "http://localhost:5000/pollreporter" // Becomes localhost in implementation
+
+let results = {}
 
 const username = () => {
 	let cmd = exec('whoami');
@@ -46,12 +49,27 @@ function showPrompt(prompt){
 	let votes = prompt.votes;
 	vscode.window.showInformationMessage(
 		message, 
-		votes[0], votes[1]
+		...votes
 	).then((vote) => {
-		if(vote == votes[0]) console.log("For");
-		if(vote == votes[1]) console.log("Against");
+		console.log(votes.indexOf(vote)); // -1 index indicates that poll was closed/timed-out
+		// TO-DO: transmit this data to term-api
+		results[vote] += user;
+		console.log(results)
 	});
 }
+
+// NEW function
+function pollResults(results){
+	let resultResponse = request.post({
+		uri: urj,
+		body: {"results": results},
+		json: true
+	}, (err, resultResponse, body) => {
+		console.log(body);
+	});
+}
+
+//function showResults(results) {}
 
 function deactivate() {}
 
