@@ -1,13 +1,14 @@
 const vscode = require('vscode');
 const { exec } = require('child_process');
 const request = require('request');
+const { updateShorthandPropertyAssignment } = require('typescript');
 
 var user;
 
 let requestURI = "http://localhost:5000/pollwatcher"
 let responseURI = "http://localhost:5000/pollreporter"
 
-let results = {}
+//let results = {}
 
 const username = () => {
 	let cmd = exec('whoami');
@@ -20,9 +21,8 @@ const username = () => {
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-	username();
 	setInterval(()=>{
-		let response = request.post({
+		request.post({
 			uri: requestURI,
 			body: {"user": user},
 			json: true
@@ -44,7 +44,7 @@ function processPrompt(prompt){
 		...votes
 	).then((vote) => {
 		// -1 index indicates that poll was closed/timed-out
-		let transmit = request.post({
+		request.post({
 			uri: responseURI,
 			body: {
 				"type": "vote",
@@ -60,6 +60,8 @@ function processPrompt(prompt){
 }
 
 function deactivate() {}
+
+username();
 
 module.exports = {
 	activate,
