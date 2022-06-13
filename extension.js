@@ -4,8 +4,8 @@ const request = require('request');
 
 var user;
 
-let requestURI = "http://localhost:5000/pollwatcher" // Becomes localhost in implementation
-let responseURI = "http://localhost:5000/pollreporter" // Becomes localhost in implementation
+let requestURI = "http://localhost:5000/pollwatcher"
+let responseURI = "http://localhost:5000/pollreporter"
 
 let results = {}
 
@@ -44,12 +44,13 @@ function processPrompt(prompt){
 		...votes
 	).then((vote) => {
 		// -1 index indicates that poll was closed/timed-out
-		let result = votes.indexOf(vote); 
 		let transmit = request.post({
 			uri: responseURI,
 			body: {
+				"type": "vote",
+				"question": message,
 				"user": user,
-				"result": result
+				"choice": vote
 			},
 			json:true
 		}, (err, response, body) => {
