@@ -39,6 +39,7 @@ function activate(context) {
 function processPrompt(prompt){
 	let message = prompt.message;
 	let votes = prompt.votes;
+	let id = prompt.id;
 	vscode.window.showInformationMessage(
 		message, 
 		...votes
@@ -48,6 +49,7 @@ function processPrompt(prompt){
 			uri: responseURI,
 			body: {
 				"type": "vote",
+				"poll_id": id,
 				"question": message,
 				"user": user,
 				"choice": vote
