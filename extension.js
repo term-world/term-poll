@@ -1,9 +1,11 @@
 const vscode = require('vscode');
 const { exec } = require('child_process');
 const request = require('request');
+const os = require('os');
 const { updateShorthandPropertyAssignment } = require('typescript');
 
 var user;
+var neighborhood;
 
 let requestURI = "http://localhost:5000/pollwatcher"
 let responseURI = "http://localhost:5000/pollreporter"
@@ -13,8 +15,14 @@ let responseURI = "http://localhost:5000/pollreporter"
 const username = () => {
 	let cmd = exec('whoami');
 	cmd.stdout.on('data', (data) =>{
-		user = data;
+		user = data.trim();
 	});
+}
+
+const location = () => {
+	let path = os.homedir();
+	let parts = path.split(/\\|\//);
+	neighborhood = parts[1];
 }
 
 /**
@@ -24,7 +32,10 @@ function activate(context) {
 	setInterval(()=>{
 		request.post({
 			uri: requestURI,
-			body: {"user": user},
+			body: {
+				"user": user,
+				"neighborhood": neighborhood
+			},
 			json: true
 		}, (err, response, body) => {
 			processPrompt(body);
@@ -64,6 +75,7 @@ function processPrompt(prompt){
 function deactivate() {}
 
 username();
+location();
 
 module.exports = {
 	activate,
