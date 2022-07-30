@@ -1,59 +1,81 @@
 const vscode = require('vscode');
 const { exec } = require('child_process');
 const request = require('request');
+const os = require('os');
+const { updateShorthandPropertyAssignment } = require('typescript');
 
 var user;
+var neighborhood;
 
-let uri = "http://cdr.theterm.world:5000/pollwatcher" // Becomes localhost in implementation
+let requestURI = "http://localhost:5000/pollwatcher"
+let responseURI = "http://localhost:5000/pollreporter"
+
+//let results = {}
 
 const username = () => {
 	let cmd = exec('whoami');
 	cmd.stdout.on('data', (data) =>{
-		user = data;
+		user = data.trim();
 	});
+}
+
+const location = () => {
+	let path = os.homedir();
+	let parts = path.split(/\\|\//);
+	neighborhood = parts[1];
 }
 
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-	username();
 	setInterval(()=>{
-		pollServer(user);
+		request.post({
+			uri: requestURI,
+			body: {
+				"user": user,
+				"neighborhood": neighborhood
+			},
+			json: true
+		}, (err, response, body) => {
+			processPrompt(body);
+		});
 	},5000);
-}
-
-/**
- * 
- * @param {String} user 
- */
-function pollServer(user){
-	let response = request.post({
-		uri: uri,
-		body: {"user": user},
-		json: true
-	}, (err, response, body) => {
-		showPrompt(body);
-	});
 }
 
 /**
  * 
  * @param {Object} prompt 
  */
-function showPrompt(prompt){
+function processPrompt(prompt){
 	let message = prompt.message;
 	let votes = prompt.votes;
+	let id = prompt.id;
 	vscode.window.showInformationMessage(
 		message, 
-		votes[0], votes[1]
+		...votes
 	).then((vote) => {
-		if(vote == votes[0]) console.log("For");
-		if(vote == votes[1]) console.log("Against");
+		// -1 index indicates that poll was closed/timed-out
+		request.post({
+			uri: responseURI,
+			body: {
+				"type": "vote",
+				"poll_id": id,
+				"question": message,
+				"user": user,
+				"choice": vote
+			},
+			json:true
+		}, (err, response, body) => {
+			console.log(body);	
+		});
 	});
 }
 
 function deactivate() {}
+
+username();
+location();
 
 module.exports = {
 	activate,
