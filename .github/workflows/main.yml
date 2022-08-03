@@ -27,7 +27,7 @@ jobs:
           draft: true
           prerelease: false
       - name: Package extention
-        run: vsce package --out package/term-poll_${{ github.ref }}.vsix
+        run: vsce package --out package/term-poll.vsix
       - name: Upload released package
         uses: actions/upload-release-asset@v1
         env:
