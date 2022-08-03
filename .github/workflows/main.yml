@@ -8,6 +8,8 @@ jobs:
   package:
     runs-on: ubuntu-latest
     steps:
+      - name: Set up git repository
+        uses: actions/checkout@v2
       - name: Install vsce
         run: npm install --location=global vsce
       - name: Install requirements
